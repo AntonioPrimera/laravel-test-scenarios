@@ -1,0 +1,28 @@
+{
+    "name": "antonioprimera/laravel-test-scenarios",
+    "description": "A versatile package, allowing you to create and reuse test scenarios",
+    "license": "MIT",
+
+    "authors": [
+        {
+            "name": "Antonio",
+            "email": "antonio@cus.ro"
+        }
+    ],
+
+    "require": {
+        "orchestra/testbench": "^7.2"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "AntonioPrimera\\TestScenarios\\": "src/"
+        }
+    },
+
+    "autoload-dev": {
+        "psr-4": {
+            "AntonioPrimera\\TestScenarios\\Tests\\": "tests/"
+        }
+    }
+}
