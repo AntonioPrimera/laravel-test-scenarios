@@ -5,6 +5,16 @@ namespace AntonioPrimera\TestScenarios;
 use AntonioPrimera\TestScenarios\Traits\Assertions;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @method array all()
+ * @method mixed set(?string $key, mixed $value)
+ * @method mixed get(string $key)
+ * @method refreshModels()
+ * @method mixed getInstance(string $expectedClass, mixed $attributeOrInstance, bool $required = false)
+ *
+ * @method login($actor)
+ * @method logout()
+ */
 abstract class TestScenario
 {
 	use Assertions;

@@ -17,19 +17,19 @@ trait HandlesAttributes
         return $this->attributes;
     }
     
-    public function set(?string $attribute, mixed $value): mixed
+    public function set(?string $key, mixed $value): mixed
     {
     	//if the attribute is empty, save the item with a random generated key
-    	$key = $attribute ?: class_basename($value) . ':' . Str::random(4);
+    	$itemKey = $key ?: class_basename($value) . ':' . Str::random(4);
     	
-    	Arr::set($this->attributes, $key, $value);
+    	Arr::set($this->attributes, $itemKey, $value);
     	
         return $value;
     }
     
-    public function get(string $attribute): mixed
+    public function get(string $key): mixed
     {
-        return Arr::get($this->attributes, $attribute);
+        return Arr::get($this->attributes, $key);
     }
     
     /**
@@ -46,22 +46,22 @@ trait HandlesAttributes
     }
     
     /**
-	 * This method retrieves an object instance from the context.
-	 * It requires the expected class and the name assigned
-	 * to the instance when added to the context
+	 * This method tries to retrieve an object instance from the
+	 * context. It requires the expected class (or a list of
+	 * acceptable classes) and the model's context key
      */
-    public function getInstance(string $expectedClass, mixed $attributeOrInstance, bool $required = false): mixed
+    public function getInstance(string|iterable $expectedClass, mixed $keyOrInstance, bool $required = false): mixed
     {
         //if the attribute is required, it can not be empty
-        if ($required && !$attributeOrInstance)
+        if ($required && !$keyOrInstance)
             throw new Exception("Given parameter is required and must be an instance of {$expectedClass} or reference a context attribute containing an instance of this class.");
             
-        if (!$attributeOrInstance)
+        if (!$keyOrInstance)
             return null;
         
-        $val = is_string($attributeOrInstance)
-            ? $this->get($attributeOrInstance)
-            : $attributeOrInstance;
+        $val = is_string($keyOrInstance)
+            ? $this->get($keyOrInstance)
+            : $keyOrInstance;
         
         //a list of possible expected classes can be given at least one must match
 		//(useful for parents of polymorphic models)
