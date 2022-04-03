@@ -32,7 +32,7 @@ You can install this package to your project, in your dev dependencies via compo
 
 `composer require --dev antonioprimera/laravel-test-contexts`
 
-## Creating and Using Test Contexts and Test Scenarios
+## Creating Scenarios
 
 Test Contexts are a sort of model factories for Test Scenarios, and because each project has
 a different set of models and model relations, each project should have its own TestContext
