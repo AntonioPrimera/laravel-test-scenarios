@@ -58,6 +58,9 @@ abstract class TestScenario
 	
 	public function __get(string $name)
 	{
+		if ($name === 'context')
+			return $this->context;
+		
 		return $this->context->$name;
 	}
 	
