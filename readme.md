@@ -5,8 +5,9 @@ test scenarios in your packages.
 
 ## Overview
 
-Test Scenarios allow you to create a set of different models once, and reuse or even create 
-other scenarios by extending existing ones.
+Test Scenarios allow you to create a set of models which resemble a live application, and reuse these
+scenarios in several tests. You can create any number of test scenarios, with different sets of models
+and application setup (e.g. application settings, configuration etc.).
 
 For example, if you created a BlogScenario for a blog project with 2 users (editor, reader)
 and 2 posts (publishedPost and unpublishedPost), you could easily do something like this:
@@ -30,26 +31,31 @@ public function a_reader_can_only_read_published_posts()
 
 You can install this package to your project, in your dev dependencies via composer:
 
-`composer require --dev antonioprimera/laravel-test-contexts`
+`composer require --dev antonioprimera/laravel-test-scenarios`
 
-## Creating Scenarios
+## Overview and basic concepts
 
-Test Contexts are a sort of model factories for Test Scenarios, and because each project has
-a different set of models and model relations, each project should have its own TestContext
-class.
+In order to create and use scenarios, you have to first create the "TestContext". The TestContext is
+nothing more than a fancy model factory, which should be smart enough to create models and adjust the
+settings and configuration of the application. In most cases, one TestContext is enough for an application.
 
-Each TestScenario class uses under its hood a specific TestContext class - preferably the one
-you created for your project. You can have any number of TestScenario classes using the same
-TestContext class.
+After the TestContext is created, you can create any number of scenarios, using this context. Inside
+a TestScenario, in the Scenario Setup method, you will use the TestContext methods to create the models
+and adjust the configuration and application settings.
 
-### Step 1: create the TestContext class for your project
+After you created the TestScenarios, you just instantiate them in your tests, and you can use the models
+created inside the scenarios and you can easily create more models, using the scenario context.
 
-Create your TestContext class, in your 'tests/TestContext' folder, by inheriting
+## Creating the Scenarios
+
+### Step 1: create a TestContext for your project
+
+Create your TestContext class, in your `tests/Context` folder, by inheriting
 `AntonioPrimera\TestScenarios\TestContext`.
 
 ### Step 2: create your model factory methods
 
-A TestContext will have various methods, used as factories, allowing you to create models. For
+A TestContext will have various public methods, used as factories, allowing you to create models. For
 example, a TestContext for a Blog project would have methods like:
 
 ```php
@@ -81,21 +87,20 @@ public function createComment(string $key, $parentPost, $author, $data = [])
 You should enable your methods to use either model instances or the context keys of models
 already created in the context.
 
-You can add these methods directly to your project's TestContext file, but this can get very
-complicated, very fast. I recommend you to create several Traits, one for each model, and
-include these traits to your TestContext class. For the example above you would create two
+In order to keep your TestContext class clean, you should group these methods in traits and just include
+them in your TestContext class. For the example above you would create two
 traits `tests/Context/Traits/CreatesPosts.php` and `tests/Context/Traits/CreatesComments.php`.
 
 ### Step 3: create your TestScenarios
 
-You can create a TestScenario, by extending the abstract class
+You can create a TestScenario, in folder `tests/Scenarios`, by extending the abstract class
 `AntonioPrimera\TestScenarios\TestScenario` and implementing the 2 abstract methods **setup**
 and **createTestContext**.
 
-The **createTestContext** must return a TestContext instance, usually the one created in your
-project.
+The **createTestContext** must return the TestContext instance, which will be used to create the scenario
+models and data.
 
-The **setup** method should use the created TestContext to create all models for the scenario
+The **setup** method should use the previously instantiated Context to create all models for the scenario
 and assign them to corresponding keys (so they can be easily retrieved later).
 
 Here's an example:
@@ -133,16 +138,96 @@ and methods via magic getter, magic setters and magic method calls to the TestCo
 
 In other words, the TestScenario exposes all created models and TestContext methods.
 
+### Instantiating scenarios
+
+In order to use a scenario, you must instantiate it, by providing the current test instance to its
+constructor.
+
+```php
+$scenario = new SimpleBlogScenario($this);
+```
+
+Or you can instantiate it in your TestCase setup method.
+
+```php
+protected SimpleBlogScenario $scenario;
+
+protected function setUp(): void
+{
+    parent::setUp();
+    $this->scenario = new SimpleBlogScenario($this);  //then just use $this->scenario in your tests
+}
+```
+
+Or you can use a trait in your base TestCase, which automatically instantiates any typed scenario
+property in any of the inheriting TestCases, so you don't have to do anything other than declare
+the scenario property.
+
+Here is how your base TestCase class could look like:
+
+```php
+namespace Tests;
+
+use AntonioPrimera\TestScenarios\HasScenarios;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+
+abstract class TestCase extends BaseTestCase
+{
+    use CreatesApplication,
+        HasScenarios;               //1. add this trait
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        $this->setupScenarios();    //2. call this method to magically instantiate scenarios
+        
+        //... other setup stuff
+    }
+}
+```
+
+Here is how one of your application TestCase could look like:
+
+```php
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Scenarios\SimpleBlogScenario;
+use Tests\TestCase;
+
+class PostTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected SimpleBlogScenario $scenario;     //1. declare your scenarios with the proper type
+
+    /** @test */
+    public function a_moderator_can_edit_any_post()
+    {
+        $this->scenario->login('moderator');    //2. just use the scenario (it was magically set up)
+        $this->patch(
+            route('posts.update', ['post-id' => $this->scenario->post->id]),
+            ['title' => 'Updated Title']
+        );
+        
+        $this->assertEquals('Updated Title', $this->scenario->post->fresh()->title);
+    }
+}
+```
+
 ### Accessing the models from a TestScenario
 
-When you create a model inside your TestScenario, you should use the TestContext
-`set($key, $valueOrModel)` method. This assigns the model to a key.
+When you create a model inside your TestScenario, you can create a property for each model created
+inside the Scenario class, but you can also use the TestContext `set($key, $valueOrModel)` method.
+This assigns a model or some piece of data to a key in the Context, which can be easily (magically)
+accessed on the Scenario instance.
 
-You can access your created models via the keys you assigned them in the TestScenario setup
-method. For example, if you created an admin user and assigned it to the `admin` key in your
-TestContext (during the TestScenario setup), you can access it via `$scenario->admin`.
+You can then magically access your created models via the keys you assigned them in the TestScenario
+setup method. For example, if you created an admin user and assigned it to the `admin` key, you can
+access it via `$scenario->admin`.
 
-Here's an example, continuing the examples above:
+Here's a test example, continuing the blog example above:
 
 ```php
 /** @test */
@@ -161,8 +246,19 @@ public function a_reader_can_only_read_published_posts()
 
 ### Accessing TestContext methods from a TestScenario
 
-Any public methods you create in your TestContext, will be accessible on your TestScenario
-instance.
+Any public methods you create in your TestContext, will be accessible on your TestScenario instance.
+For linting support from your IDE, you can also directly access the context instance on your scenario.
+
+```php
+$scenario->createPost('somePost', ['title' => 'Some Title', 'body' => 'Some Body']);
+//is equivalent to
+$scenario->context->createPost('somePost', ['title' => 'Some Title', 'body' => 'Some Body']);
+
+//then, to access the post you can do:
+$post = $scenario->somePost;                    //this is the magic version
+//or
+$post = $scenario->context->get('somePost');    //this actually happens under the hood
+```
 
 ### Login and Logout of TestScenario Users (actors)
 
@@ -209,4 +305,4 @@ use cases where this was handy.
 
 This method refreshes all model instances, by re-fetching them from the DB (using their
 `refresh()` method). In some cases, this is needed, because applications are stateless and
-your real life application uses fresh models.
+your real life application uses fresh models in subsequent requests.
