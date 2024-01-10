@@ -1,3 +1,5 @@
 /vendor/
+/workbench/
+testbench.yaml
 .idea
 .DS_Store

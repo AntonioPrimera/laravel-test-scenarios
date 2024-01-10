@@ -1,0 +1,12 @@
+<?php
+namespace DUMMY_NAMESPACE;
+
+use AntonioPrimera\TestScenarios\TestContext as BaseTestContext;
+MODEL_IMPORTS
+
+class DUMMY_CLASS extends BaseTestContext
+{
+	
+MODEL_FACTORY_METHODS
+
+}

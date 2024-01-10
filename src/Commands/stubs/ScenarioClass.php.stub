@@ -1,0 +1,24 @@
+<?php
+namespace DUMMY_NAMESPACE;
+
+use AntonioPrimera\TestScenarios\TestScenario;
+use PHPUnit\Framework\TestCase;
+use Tests\Context\CONTEXT_CLASS;
+
+class DUMMY_CLASS extends TestScenario
+{
+	
+	public function setup(mixed $data = null)
+	{
+		//call all the setup methods to set up the scenario
+		//e.g. $this->createSuperAdmin('superAdmin', ['email' => 'admin@test.com']);
+		//e.g. $this->createUser('george', ['email' => 'user@test.com']);
+		//e.g. $this->setupProductCategory('clothing', ['name' => 'Clothing', 'description' => '...']);
+		//...
+	}
+
+	protected function createTestContext(TestCase $testCase): TestContext
+	{
+		return new CONTEXT_CLASS($testCase);
+	}
+}
