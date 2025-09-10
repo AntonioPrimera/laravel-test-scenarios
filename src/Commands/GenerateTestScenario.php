@@ -21,7 +21,7 @@ class GenerateTestScenario extends FileGeneratorCommand
 		return [
 			'Scenario Class' => FileRecipe::create(
 				stub: __DIR__ . '/stubs/ScenarioClass.php.stub',
-				target: 'tests/Scenarios',
+				targetFolder: 'tests/Scenarios',
 				rootNamespace: 'Tests\\Scenarios',
 				replace: [
 					'CONTEXT_CLASS' => $this->getContextClass(),

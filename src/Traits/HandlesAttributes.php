@@ -29,8 +29,16 @@ trait HandlesAttributes
     
     public function get(string $key): mixed
     {
+		if (!Arr::has($this->attributes, $key))
+			throw new Exception("No attribute found in the test scenario context with key '{$key}'.");
+			
         return Arr::get($this->attributes, $key);
     }
+	
+	public function has(string $key): bool
+	{
+		return Arr::has($this->attributes, $key);
+	}
     
     /**
      * Goes through all models stored in the current

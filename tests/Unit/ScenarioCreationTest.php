@@ -38,9 +38,11 @@ class ScenarioCreationTest extends TestCase
 		$complexScenario = new ComplexScenario($this);
 		
 		$this->assertInstanceOf(Product::class, $simpleScenario->prod_1);
-		$this->assertNull($simpleScenario->prod_2);
 		$this->assertInstanceOf(Product::class, $complexScenario->prod_1);
 		$this->assertInstanceOf(Product::class, $complexScenario->prod_2);
+		
+		$this->expectException(\Exception::class);
+		$this->assertNull($simpleScenario->prod_2);
 	}
 	
 	/** @test */
