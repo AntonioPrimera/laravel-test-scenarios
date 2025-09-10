@@ -9,6 +9,7 @@ use AntonioPrimera\TestScenarios\Tests\Context\SimpleScenario;
 use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Comment;
 use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Product;
 use AntonioPrimera\TestScenarios\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AutomaticScenarioCreationTest extends TestCase
 {
@@ -23,7 +24,7 @@ class AutomaticScenarioCreationTest extends TestCase
 		$this->setupScenarios();	//this should instantiate the two scenario properties automatically
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_automatically_instantiated_all_scenario_properties()
 	{
 		$this->assertInstanceOf(SimpleScenario::class, $this->simpleScenario);

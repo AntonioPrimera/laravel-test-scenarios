@@ -6,17 +6,18 @@ use AntonioPrimera\TestScenarios\Tests\Context\AppContext;
 use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Comment;
 use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Product;
 use AntonioPrimera\TestScenarios\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ContextCreationTest extends TestCase
 {
-	/** @test */
+	#[Test]
 	public function it_can_create_a_simple_test_context()
 	{
 		$context = new AppContext($this);
 		$this->assertInstanceOf(TestContext::class, $context);
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_can_create_and_retrieve_a_simple_product()
 	{
 		$context = new AppContext($this);
@@ -27,7 +28,7 @@ class ContextCreationTest extends TestCase
 		$this->assertTrue($product === $context->prod_1);
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_can_create_2_related_models()
 	{
 		$context = new AppContext($this);

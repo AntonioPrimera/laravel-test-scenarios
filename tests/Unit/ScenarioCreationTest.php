@@ -9,11 +9,12 @@ use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Comment;
 use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Product;
 use AntonioPrimera\TestScenarios\Tests\TestCase;
 use AntonioPrimera\TestScenarios\TestScenario;
+use PHPUnit\Framework\Attributes\Test;
 
 class ScenarioCreationTest extends TestCase
 {
 	
-	/** @test */
+	#[Test]
 	public function it_can_create_a_simple_scenario()
 	{
 		$scenario = new SimpleScenario($this);
@@ -22,7 +23,7 @@ class ScenarioCreationTest extends TestCase
 		$this->assertSame($this, $scenario->getTestCase());
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_can_retrieve_attributes_directly_from_the_context()
 	{
 		$simpleScenario = new SimpleScenario($this);
@@ -31,7 +32,7 @@ class ScenarioCreationTest extends TestCase
 		$this->assertSame($simpleScenario->prod_1, $simpleScenario->getContext()->prod_1);
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_can_run_several_different_scenarios_at_the_same_time()
 	{
 		$simpleScenario = new SimpleScenario($this);
@@ -45,7 +46,7 @@ class ScenarioCreationTest extends TestCase
 		$this->assertNull($simpleScenario->prod_2);
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_can_forward_assertions_to_its_test_case()
 	{
 		$simpleScenario = new SimpleScenario($this);
@@ -54,7 +55,7 @@ class ScenarioCreationTest extends TestCase
 		$this->assertSame($simpleScenario->prod_1, $simpleScenario->getContext()->prod_1);
 	}
 	
-	/** @test */
+	#[Test]
 	public function it_can_assert_it_has_a_specific_model_under_a_specific_attribute_name()
 	{
 		$simpleScenario = new SimpleScenario($this);
