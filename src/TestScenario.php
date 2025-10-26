@@ -4,6 +4,7 @@ namespace AntonioPrimera\TestScenarios;
 
 use AntonioPrimera\TestScenarios\Traits\Assertions;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 /**
  * @method array all()
@@ -20,9 +21,9 @@ abstract class TestScenario
 	use Assertions;
 	
 	protected TestContext $context;
-	protected TestCase $testCase;
+	protected ?TestCase $testCase;
 	
-	public function __construct(TestCase $testCase, mixed $setupData = null)
+	public function __construct(?TestCase $testCase = null, mixed $setupData = null)
 	{
 		$this->testCase = $testCase;
 		$this->context = $this->createTestContext($testCase);
@@ -40,7 +41,7 @@ abstract class TestScenario
 	 * Create a new TestContext instance, using your project's
 	 * TestContext class (with all traits and stuff)
 	 */
-	abstract protected function createTestContext(TestCase $testCase): TestContext;
+	abstract protected function createTestContext(?TestCase $testCase): TestContext;
 	
 	//--- Getters -----------------------------------------------------------------------------------------------------
 	
@@ -49,8 +50,19 @@ abstract class TestScenario
 		return $this->context;
 	}
 	
-	public function getTestCase(): TestCase
+	public function getTestCase(): ?TestCase
 	{
+		return $this->testCase;
+	}
+
+	protected function requireTestCase(string $feature): TestCase
+	{
+		if (!$this->testCase)
+			throw new RuntimeException(sprintf(
+				'%s requires a PHPUnit TestCase instance. Pass one to the scenario constructor.',
+				$feature
+			));
+
 		return $this->testCase;
 	}
 	
@@ -73,7 +85,7 @@ abstract class TestScenario
 	{
 		//run assertions on the TestCase instance
 		if (str_starts_with($name, 'assert'))
-			return $this->testCase->$name(...$arguments);
+			return $this->requireTestCase($name)->$name(...$arguments);
 		
 		//forward everything else to the context
 		return $this->context->$name(...$arguments);

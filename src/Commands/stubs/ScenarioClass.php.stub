@@ -1,10 +1,15 @@
 <?php
 namespace DUMMY_NAMESPACE;
 
+use AntonioPrimera\TestScenarios\TestContext;
 use AntonioPrimera\TestScenarios\TestScenario;
 use PHPUnit\Framework\TestCase;
 use Tests\Context\CONTEXT_CLASS;
 
+/**
+ * Describe the deterministic fixtures provided by this scenario so agents
+ * can discover it via `php artisan test-scenarios:list`.
+ */
 class DUMMY_CLASS extends TestScenario
 {
 	
@@ -17,7 +22,7 @@ class DUMMY_CLASS extends TestScenario
 		//...
 	}
 
-	protected function createTestContext(TestCase $testCase): TestContext
+	protected function createTestContext(?TestCase $testCase): TestContext
 	{
 		return new CONTEXT_CLASS($testCase);
 	}

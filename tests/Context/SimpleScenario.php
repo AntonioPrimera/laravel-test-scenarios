@@ -6,6 +6,9 @@ use AntonioPrimera\TestScenarios\TestContext;
 use AntonioPrimera\TestScenarios\TestScenario;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Seeds a single product and comment for smoke tests.
+ */
 class SimpleScenario extends TestScenario
 {
 	
@@ -18,7 +21,7 @@ class SimpleScenario extends TestScenario
 		$context->createComment('comment_1', 'prod_1');
 	}
 	
-	protected function createTestContext(TestCase $testCase): TestContext
+	protected function createTestContext(?TestCase $testCase): TestContext
 	{
 		return new AppContext($testCase);
 	}

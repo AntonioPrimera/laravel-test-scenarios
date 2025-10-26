@@ -21,7 +21,7 @@ class ComplexScenario extends TestScenario
 		$context->createComment('comment_22', 'prod_2');
 	}
 	
-	protected function createTestContext(TestCase $testCase): TestContext
+	protected function createTestContext(?TestCase $testCase): TestContext
 	{
 		return new AppContext($testCase);
 	}

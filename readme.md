@@ -35,6 +35,9 @@ You can install this package to your project, in your dev dependencies via compo
 
 ## Overview and basic concepts
 
+> Deterministic data is a hard requirement. Scenarios must create explicit, fixed fixtures (e.g.
+> `admin@bforum.test`, `[SEC01] - Section 1`). Never rely on JSON outputs or random factories.
+
 In order to create and use scenarios, you have to first create the "TestContext". The TestContext is
 nothing more than a fancy model factory, which should be smart enough to create models and adjust the
 settings and configuration of the application. In most cases, one TestContext is enough for an application.
@@ -122,13 +125,22 @@ class SimpleBlogScenario extends TestScenario
         $context->createComment('readerComment', 'publishedPost', 'reader', ['body' => 'Nice post']);
     }
     
-    protected function createTestContext(TestCase $testCase): TestContext
+    protected function createTestContext(?TestCase $testCase): TestContext
     {
         //the test context created previously for your own project
         return new BlogContext($testCase);
     }
 }
 ```
+
+> **Heads up:** When provisioning scenarios outside of PHPUnit / Pest you can omit the `$testCase`
+> argument (`new BlogScenario()`), but any method that forwards to the underlying `TestCase`
+> instance (assertions, `login()`, etc.) will now throw a descriptive exception so you immediately
+> know that the scenario needs a real test case instance.
+
+> **Docblocks help agents.** Add a short PHPDoc summary above every scenario describing the
+> fixtures and actors it provisions. The `php artisan test-scenarios:list` command surfaces this
+> text to other developers and AI agents.
 
 ## Using Scenarios
 
@@ -306,3 +318,59 @@ use cases where this was handy.
 This method refreshes all model instances, by re-fetching them from the DB (using their
 `refresh()` method). In some cases, this is needed, because applications are stateless and
 your real life application uses fresh models in subsequent requests.
+
+## Provisioning databases for E2E tests
+
+You can now reuse your scenarios outside of PHPUnit / Pest to seed state for Playwright,
+Cypress or any other end-to-end harness.
+
+1. **Publish the config** (optional, only if you want custom aliases):
+   ```bash
+   php artisan vendor:publish --tag=test-scenarios-config
+   ```
+   Map short aliases to your scenario classes inside `config/test-scenarios.php`.
+
+2. **Provision via artisan**
+   ```bash
+   php artisan test-scenarios:provision blog \
+       --data='{"locale":"en"}' \
+       --connection=sqlite
+   ```
+   Options:
+   - `--data=` accepts raw JSON or `@path/to/file.json`.
+   - The command always runs `migrate:fresh`; data is deterministic, so no JSON output is emitted.
+   - `--seed` runs `Database\Seeders\DatabaseSeeder` after `migrate:fresh`. By default no seeders are executed; scenarios should provision all data.
+   - `--connection=` temporarily overrides `database.default`.
+   - `--refresh-models` / `--no-refresh-models` override the config default.
+   - Commands refuse to run when `APP_ENV=production` to avoid mutating live databases.
+
+3. **Provision from Playwright** using the bundled helper located at
+   `vendor/antonioprimera/laravel-test-scenarios/playwright/index.js`:
+   ```js
+   const { provisionScenario } = require(
+     '../../vendor/antonioprimera/laravel-test-scenarios/playwright'
+   );
+
+   module.exports = async () => {
+     await provisionScenario('blog', {
+       data: { locale: 'en' },
+       artisanPath: '../artisan',
+     });
+
+     process.env.E2E_ADMIN_EMAIL = 'admin@bforum.test';
+   };
+   ```
+
+For a deeper dive (including architecture notes) check `docs/e2e-provisioning.md`.
+
+### Agent tooling & docs
+
+- `php artisan test-scenarios:docs [--section=agents|readme]` – print the package README and
+  the agent-specific playbook (`docs/agents.md`).
+- `php artisan test-scenarios:list [--json]` – show every registered scenario alias, its class,
+  and the docblock summary. Keep the docblocks up to date so other agents know what data exists.
+- `php artisan test-contexts:list [--json]` – list the registered `TestContext` classes along with
+  their public builder methods (requires you to register contexts inside `config/test-scenarios.php`).
+
+Agents should always follow the deterministic-data guidelines laid out in `docs/agents.md` before
+attempting to extend or consume scenarios.

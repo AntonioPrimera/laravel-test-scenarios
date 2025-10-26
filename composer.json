@@ -24,7 +24,10 @@
     "autoload-dev": {
         "psr-4": {
             "AntonioPrimera\\TestScenarios\\Tests\\": "tests/"
-        }
+        },
+        "classmap": [
+            "tests/Database/Seeders"
+        ]
     },
 	"scripts": {
 		"test": "vendor/bin/phpunit"

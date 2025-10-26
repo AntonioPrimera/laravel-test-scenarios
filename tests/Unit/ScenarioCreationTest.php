@@ -10,6 +10,7 @@ use AntonioPrimera\TestScenarios\Tests\Context\TestModels\Product;
 use AntonioPrimera\TestScenarios\Tests\TestCase;
 use AntonioPrimera\TestScenarios\TestScenario;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 
 class ScenarioCreationTest extends TestCase
 {
@@ -21,6 +22,25 @@ class ScenarioCreationTest extends TestCase
 		$this->assertInstanceOf(TestScenario::class, $scenario);
 		$this->assertInstanceOf(AppContext::class, $scenario->getContext());
 		$this->assertSame($this, $scenario->getTestCase());
+	}
+
+	#[Test]
+	public function it_can_run_without_a_test_case_instance()
+	{
+		$scenario = new SimpleScenario();
+
+		$this->assertNull($scenario->getTestCase());
+		$this->assertInstanceOf(Product::class, $scenario->prod_1);
+	}
+
+	#[Test]
+	public function it_throws_a_clear_error_when_assertions_need_a_test_case()
+	{
+		$scenario = new SimpleScenario();
+
+		$this->expectException(RuntimeException::class);
+		$this->expectExceptionMessage('assertInstanceOf requires a PHPUnit TestCase instance');
+		$scenario->assertInstanceOf(Product::class, 'prod_1');
 	}
 	
 	#[Test]
